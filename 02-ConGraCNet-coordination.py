@@ -3,6 +3,7 @@
 """
 Created on Mon Mar  4 12:48:45 2019
 @author: Benedikt Perak
+Use this file for executing cells
 """
 #%% I Database Connect section
 
@@ -216,9 +217,7 @@ def FoFgraph(lemma, pos, corpus):
     return(G)
 
 limit=4
-FoFgraph("osjećaj", "-n", "hrwac")
-#FoFgraph("krava", "-n", "croparl")
-#FoFgraph("chair", "-n", "ententen13")
+FoFgraph("chair", "-n", "ententen13")
 
 #%% FoFgraphDraw
 def FoFgraphDraw(lemma, pos, corpus, Glayout):
@@ -246,7 +245,9 @@ def FoFgraphDraw(lemma, pos, corpus, Glayout):
 limit=10
 #FoFgraphDraw("krava", "-n", "croparl", "fr")
 #FoFgraphDraw("stolica", "-n", "hrwac", "fr")
-#FoFgraphDraw("love", "-n", "ententen13", "fr")
+FoFgraphDraw("love", "-n", "ententen13", "fr")
+
+
 #%% 4 process the graph with louvain
 import louvain
 
@@ -488,120 +489,7 @@ while diff>1:
 
 
 
-# =============================================================================
-# CroParl
-# =============================================================================
 
-#%% Zastupnik uses lexeme
-def zast_lexeme(lemma, pos, corpus):
-    if corpus == "croparl":
-        if pos == "-n":
-            upostag ="NOUN"
-        q='''
-        MATCH p = (z:Zastupnik)-[di:DELIVERED_izjavu]->(i:Izjava)-[hs:HAS_sentence]->(s:Sentences)-[ht:HAS_token]->(t:Tokens{lemma:$lemma, upostag:$upostag}) 
-        RETURN z.name as source, $lemma as friend, log(count(ht)) as weight order by weight desc limit 15
-        '''
-    df=graph.run(q, lemma=lemma, upostag=upostag).to_data_frame()
-    return (df)
-
-zast_lexeme("krava", "-n", "croparl")
-
-#%% Zastupnik frequency of lexeme and example
-import pprint
-
-def zast_lexeme_ex(lemma, pos, corpus):
-    if corpus == "croparl":
-        if pos == "-n":
-            upostag ="NOUN"
-        q='''
-        MATCH p = (z:Zastupnik)-[di:DELIVERED_izjavu]->(i:Izjava)-[hs:HAS_sentence]->(s:Sentences)-[ht:HAS_token]->(t:Tokens{lemma:$lemma, upostag:$upostag})        
-        with z.name as Person, $lemma as friend, count(ht) as FrequencyOfUse, s.text as SentenceExample order by FrequencyOfUse desc limit 15
-        return Person, SentenceExample, FrequencyOfUse
-        '''
-    df=graph.run(q, lemma=lemma, upostag=upostag)#.to_data_frame()
-    #print(df['Person'],['FrequencyOfUse']) 
-    pp = pprint.PrettyPrinter(indent=3)
-    pp.pprint(list(df))
-    
-    #return (df)
-
-zast_lexeme_ex("osjećaj", "-n", "croparl")
-
-
-#%% lexeme and_orF df + Zastupnik uses F
-def zast_lexeme_and_orF(lemma, pos, corpus):
-    #extract F network
-    df=and_orF(lemma, pos, corpus)
-    #extract FoF network from friend 
-    for index, row in df.iterrows():
-        df2=zast_lexeme(row['friend'], pos, corpus)
-        #append the dataframe of df2 to df
-        df=df.append(df2)
-    df=df.drop_duplicates()
-    return (df)
-
-
-
-zast_lexeme_and_orF("ustaša", "-n", "croparl")
-#%% draw F graph with Zastupnik
-import time
-
-#create friend Graph
-def zastupnik_Fgraph(lemma, pos, corpus, Glayout):
-    start = time.time()
-    #create df variable
-    df=zast_lexeme_and_orF(lemma, pos, corpus)
-    #create tuples from df.values
-    tuples = [tuple(x) for x in df.values]
-    #create igraph object from tuples
-    G=ig.Graph.TupleList(tuples, directed = False, edge_attrs=['weight'], vertex_name_attr='name', weights=False)
-    partition = leidenalg.find_partition(G, leidenalg.ModularityVertexPartition)
-    
-    #create vertex labels from name attr
-    G.vs["label"]=G.vs["name"]
-    G.vs["degree"]=G.vs.degree()
-    G.vs["pagerank"]=G.vs.pagerank()
-    G.vs["personalized_pagerank"]=G.vs.personalized_pagerank()
-    
-    #Cluster Colors Programatic Method
-    palette = ig.drawing.colors.ClusterColoringPalette(len(partition))
-    #Vertex color
-    G.vs['color'] = palette.get_many(partition.membership)
-    #Edge color
-    for p in range(len(partition)): 
-        edge = (G.es.select(_within = partition[p]))
-        edge['color'] = palette.get_many(p)
-        for c in edge['color']:
-            #convert tuples to list, add opacity value, reconvert to tuples
-            lst=list(c)
-            #set opacity value
-            lst[3]= 0.1
-            lst = tuple(lst)
-            
-            
-    #visual_style settings
-    #layout=G.layout(Glayout)
-    visual_style = {}
-    visual_style["vertex_size"] = [i * 1000 for i in G.vs["pagerank"]]
-    visual_style["vertex_label_color"] = "black"
-    visual_style["vertex_label_size"] = 30 #maybe it could be G.vs["degree"]
-    visual_style["vertex_label_dist"] = 1
-    visual_style["edge_width"] = G.es["weight"]
-    visual_style['hovermode'] = 'closest'
-    visual_style["layout"] = Glayout
-    visual_style["bbox"] = (1500, 1500)
-    visual_style["margin"] = 150
-    print(partition)
-    
-    lemmaW= (bytes(lemma, 'utf-8')).decode('mbcs', 'ignore')
-
-    ig.plot(partition, "images/Fgraph_Zast_"+lemmaW+pos+"-"+str(limit)+"-"+str(scoreMin)+"-"+str(freqMin)+"-"+corpus+"-"+Glayout+".png", **visual_style)
-    ig.plot(partition, "images/Fgraph_Zast_"+lemmaW+pos+"-"+str(limit)+"-"+str(scoreMin)+"-"+str(freqMin)+"-"+corpus+"-"+Glayout+".svg", **visual_style)
-    end = time.time()
-    print("Graph created in: ", end-start)
-
-limit=10
-zastupnik_Fgraph("fašizam", "-n", "croparl", "fr")
 
 
 #%% III Query: Extract the coocuring nodes (Friends)
@@ -609,178 +497,11 @@ friends=and_orF("audience", "-n", "ententen13")
 print(friends)
 
 #%% III Query+Draw Friend network (lemma, pos, layout)
-Fgraph("stolica", "-n", "hrwac", "fr")
+Fgraph("chair", "-n", "ententen13", "fr")
 
 
-#%% III Query: Extract the graph and sort it according to the 
+#%% III Query: Extract the graph and sort it according to the degree 
 g=FoFgraph("chair", "-n", "ententen13")
 for item in sorted(g.vs, key= lambda x:x['degree']):
     print (item["name"], item["degree"])#, (item["pagerank"]*1000), (item["personalized_pagerank"]*1000) )
 
-#%% III Query: Find partitions according to the 
-#leidenAlg(lemma, pos)
-leidenAlg("chair", "-n")
-
-#%%% III Query: Optimiser value
-leidenAlgOpti("chair", "-n")
-
-#%% III Query and draw: Find partitions according to the leidenAlg and draw graph 
-#leidenAlgoDraw(lemma, pos, igraphlayout)
-leidenAlgoDraw("stolica", "-n", "hrwac", "kk")
-
-
-
-#%% work area
-
-
-#%%edge selection
-#https://igraph.org/python/doc/igraph.EdgeSeq-class.html
-#http://cneurocvs.rmki.kfki.hu/igraph/screenshots2.html
-
-
-G = FoFgraph(lemma, pos, corpus)
-#diameter=G.get_diameter
-
-#find partitions
-partition = leidenalg.find_partition(G, leidenalg.ModularityVertexPartition)
-partitionNo= len(partition)
-prva= G.es.select(_within = partition[0])
-druga= G.es.select(_within = partition[1]) 
-#color = G.vs(partition[0][0]) ["vertex_color"]
-prva["color"] =  "red"
-druga["color"] = "green"
-ig.plot(partition, layout="fr")
-
-#%% Ovaj način crtanja radi do nekog broja
-
-
-G = FoFgraph("chair", pos, corpus)
-#diameter=G.get_diameter
-
-G.es["color"] = "black"
-
-#find partitions
-#partition = leidenalg.find_partition(G, leidenalg.ModularityVertexPartition)
-partition = leidenalg.find_partition(G, leidenalg.CPMVertexPartition, resolution_parameter = 0.02)
-
-#odredi boje
-listC=["red", "green", "blue", "yellow", "violet", "lila", "black", "cyan", "darkgreen", "orange", "magenta"]
-#listC=[1,2,3,4,5,6,7,8,9,10,11,12]
-
-if len(partition) > len(listC):
-    print ("error")
-
-# za svaku particiju iscrtaj veze drugom bojom 
-for p in range(len(partition)): 
-    edge = (G.es.select(_within = partition[p]))
-    color = listC[p]
-    edge["color"]= listC[p]
-ig.plot(partition, "images/Work.png", opacity= 0.5, layout="kk")
-
-#%% opći princip s modulom igraph.drawing.colors
-G = ig.Graph.Barabasi(n = 20, m = 1)
-i = G.community_infomap()
-palette = ig.drawing.colors.ClusterColoringPalette(len(i))
-G.vs['color'] = palette.get_many(i.membership)
-for p in range(len(i)): 
-    edge = (g.es.select(_within = i[p]))
-    edge['color'] = palette.get_many(p)
-    #get(p)
-    
-
-#g.es['color'] = pal.get_many(i.membership) #ne printa kako treba
-ig.plot(g)
-#%% draw procedure for Leiden
-lemma="chair"
-pos="-n"
-igraphlayout="fr"
-
-G = FoFgraph(lemma, pos, corpus)
-#diameter=G.get_diameter
-
-#find partitions
-#partition = leidenalg.find_partition(G, leidenalg.ModularityVertexPartition)
-partition = leidenalg.find_partition(G, leidenalg.CPMVertexPartition, resolution_parameter = 0.09)
-
-#Cluster Colors Programatic Method
-palette = ig.drawing.colors.ClusterColoringPalette(len(partition))
-#Vertex color
-G.vs['color'] = palette.get_many(partition.membership)
-#Edge color
-for p in range(len(partition)): 
-    edge = (G.es.select(_within = partition[p]))
-    edge['color'] = palette.get_many(p)
-
-ig.plot(partition, "images/Work"+lemma+pos+"-"+str(limit)+"-"+str(scoreMin)+"-"+str(freqMin)+"-"+igraphlayout+".png", opacity= 1, layout="fr")
-ig.plot(partition, "images/Work"+lemma+pos+"-"+str(limit)+"-"+str(scoreMin)+"-"+str(freqMin)+"-"+igraphlayout+".svg", opacity= 1, layout="fr")
-
-
-#%% print the nodes in parition
-for n in range(len(partition)):
-    print(len(G.es.select(_within = partition[n])))
-    
-#%% Full draw procedure for clustering and coloring
-#layout="fr"
-limit=50 #max = 300
-lemma= "chair"
-pos="-n"
-
-G = FoFgraph(lemma, pos, corpus)
-#print(G.es['weight'])
-
-partition = leidenalg.find_partition(G, leidenalg.ModularityVertexPartition)
-
-
-#Cluster Colors Programatic Method
-palette = ig.drawing.colors.ClusterColoringPalette(len(partition))
-#Vertex color
-G.vs['color'] = palette.get_many(partition.membership)
-#Edge color
-for p in range(len(partition)): 
-    edge = (G.es.select(_within = partition[p]))
-    edge['color'] = palette.get_many(p)
-    
-        
-#visual_style settings
-layout="fr"
-visual_style = {}
-visual_style["vertex_size"] = [i * 5000 for i in G.vs["pagerank"]]
-#visual_style["vertex_size"] = 10
-#visual_style["vertex_color"] = "red" #ako želimo bez bojica čvorove odkomentirati
-#visual_style["label"] = G.vs["name"]
-visual_style["vertex_label_color"] = "black"
-visual_style["vertex_label_size"] = 80 #[i * 50 for i in G.vs["pagerank"]]
-visual_style["vertex_label_dist"] = 1
-
-visual_style["edge_width"] = G.es["weight"]
-#visual_style["edge_color"] = "black" #ako želimo bez bojica veze odkomentirati
-
-visual_style['hovermode'] = 'closest'
-visual_style["layout"] = layout
-visual_style["bbox"] = (5500, 5500)
-visual_style["margin"] = 50
-
-
-ig.plot(partition , "images/FoF"+lemma+pos+"-"+str(limit)+"-"+str(scoreMin)+"-"+str(freqMin)+"-"+layout+".svg", **visual_style)
-ig.plot(partition, "images/FoF"+lemma+pos+"-"+str(limit)+"-"+str(scoreMin)+"-"+str(freqMin)+"-"+layout+".png", opacity= 1, **visual_style )
-#%%
-
-#fig = ig.Plot()
-#fig.add(G, layout="fr", opacity=0.25, vertex_label=None)
-#fig.add(edges, layout="fr", edge_color="red", vertex_label=None)
-#fig.show()
-
-#%% Optimiser
-G = FoFgraph("sound", "-n")
-partition = leidenalg.find_partition(G, leidenalg.ModularityVertexPartition)
-print(partition)
-
-#Optimiser
-optimiser= leidenalg.Optimiser().optimise_partition(partition, n_iterations=40)
-#optimized= optimiser.optimise_partition(partition, n_iterations=10)
-print(optimiser)
-
-partition2 = leidenalg.find_partition(G, leidenalg.CPMVertexPartition, resolution_parameter = optimiser)
-print(partition2)
-ig.plot(partition2, "images/optimiser.png", layout="fr")
-print(len(partition2))
