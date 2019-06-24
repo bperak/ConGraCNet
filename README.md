@@ -11,6 +11,6 @@ A method to extract conceptual networks from a corpus based on the syntactic-sem
 
 4- Run 01-collocations.py to see list of collocations for a lexeme
 
-5 -Run cells in 02-ConGraCNet-coordination.py to see networks
+5 -Run cells in 02-ConGraCNet-coordination.py to process lexical networks using the ConGraCNet method
 
 
