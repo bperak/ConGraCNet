@@ -9,7 +9,7 @@ Emocnet
 
 First, you'll need to clone the repository to your local machine using git.
 
-git clone https://github.com/bperak/EmoCNet.git
+git clone https://github.com/bperak/ConGraCNet.git
 
 This will create a directory named EmoCNet in your current location. Navigate to that directory:
 
