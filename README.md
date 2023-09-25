@@ -11,9 +11,9 @@ First, you'll need to clone the repository to your local machine using git.
 
 git clone https://github.com/bperak/ConGraCNet.git
 
-This will create a directory named EmoCNet in your current location. Navigate to that directory:
+This will create a directory named congracnet in your current location. Navigate to that directory:
 
-cd EmoCNet
+cd congracnet
 
 ## Create a Virtual Environment (Recommended):
 
@@ -32,8 +32,8 @@ On macOS and Linux:
 source emocnet_env/bin/activate
 
 If you're using Anaconda:
-conda create --name emocnet_env python=3.11
-conda activate emocnet_env
+conda create --name congracnet_env python=3.11
+conda activate congracnet_env
 
 ## Install Dependencies:
 
