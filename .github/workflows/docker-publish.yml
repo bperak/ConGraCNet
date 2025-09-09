@@ -1,0 +1,59 @@
+name: Publish Docker images
+
+on:
+  push:
+    branches: [ "main" ]
+    tags: [ "v*" ]
+
+env:
+  IMAGE_NAME: congracnet
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Set image tags
+        id: vars
+        run: |
+          GHCR_BASE=ghcr.io/${{ github.repository_owner }}/${IMAGE_NAME}
+          DH_BASE=${{ secrets.DOCKERHUB_USERNAME }}/${IMAGE_NAME}
+          echo "ghcr_latest=${GHCR_BASE}:latest" >> $GITHUB_OUTPUT
+          echo "ghcr_sha=${GHCR_BASE}:sha-${GITHUB_SHA}" >> $GITHUB_OUTPUT
+          echo "dh_latest=${DH_BASE}:latest" >> $GITHUB_OUTPUT
+          echo "dh_sha=${DH_BASE}:sha-${GITHUB_SHA}" >> $GITHUB_OUTPUT
+
+      - name: Build and push to GHCR and Docker Hub
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ./Dockerfile
+          push: true
+          tags: |
+            ${{ steps.vars.outputs.ghcr_latest }}
+            ${{ steps.vars.outputs.ghcr_sha }}
+            ${{ steps.vars.outputs.dh_latest }}
+            ${{ steps.vars.outputs.dh_sha }}
+          build-args: |
+            PYTHON_VERSION=3.11-slim
+            INSTALL_SPACY_MODEL=true
+
+

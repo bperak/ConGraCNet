@@ -1,0 +1,41 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.sqlite3
+*.log
+
+# Virtual envs
+venv/
+.env
+.env.*
+
+# Git
+.git
+.gitignore
+
+# Data and caches
+*.pkl
+*.pickle
+*.parquet
+*.feather
+*.csv
+*.tsv
+*.xlsx
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Build
+build/
+dist/
+*.egg-info/
+
+# Notebooks outputs
+.ipynb_checkpoints/
+
+# Streamlit and app caches
+.streamlit/
+**/.cache/
