@@ -20,6 +20,13 @@
   - [ ] Create architecture diagrams
   - [ ] Create function documentation
 
+### 🐳 Containerization (New)
+- [x] Add Dockerfile for Streamlit app
+- [x] Add .dockerignore to reduce build context
+- [x] Add sitecustomize.py to load .env and override authSettings
+- [x] Add docker-compose.yml for local development
+- [x] Update README with Docker usage
+
 ## Completed Tasks ✅
 - [x] **Project Structure Analysis** - Analyzed existing codebase and identified components
 - [x] **PLANNING.md Creation** - Established project architecture and conventions

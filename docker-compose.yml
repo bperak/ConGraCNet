@@ -1,0 +1,33 @@
+version: "3.9"
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        PYTHON_VERSION: 3.11-slim
+        INSTALL_SPACY_MODEL: "true"
+    image: congracnet:latest
+    container_name: congracnet
+    env_file:
+      - .env
+    environment:
+      # Streamlit settings
+      STREAMLIT_SERVER_HEADLESS: "true"
+      STREAMLIT_SERVER_ADDRESS: 0.0.0.0
+      STREAMLIT_BROWSER_GATHER_USAGE_STATS: "false"
+      # Optional: override auth via env if not using .env
+      # GRAPH_URL: bolt://localhost:7687
+      # GRAPH_USER: neo4j
+      # GRAPH_PASS: password
+      # SKETCH_USER: your-user
+      # SKETCH_API_KEY: your-key
+    ports:
+      - "8501:8501"
+    volumes:
+      - .:/app
+    restart: unless-stopped
+    command: ["streamlit", "run", "cgcnStream_0_3_6_withSBBLabel.py"]
+
+

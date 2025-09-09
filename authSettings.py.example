@@ -1,0 +1,18 @@
+# -*- coding: utf-8 -*-
+
+"""
+Example configuration. Copy to authSettings.py and fill in real values,
+or set environment variables (GRAPH_URL, GRAPH_USER, GRAPH_PASS, SKETCH_USER, SKETCH_API_KEY)
+to override at runtime.
+"""
+
+# Neo4j Database Configuration
+graphUser = "neo4j"
+graphPass = "change-me"
+graphURL = "bolt://your-neo4j-server:7687"
+
+# Sketch Engine API Configuration
+userName = "your-sketch-engine-username"
+apiKey = "your-sketch-engine-api-key"
+
+
