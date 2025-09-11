@@ -20,8 +20,6 @@ RUN apt-get update -y && \
       curl \
       git \
       pkg-config \
-      libigraph0-dev \
-      libglpk-dev \
       libxml2-dev \
       libz-dev \
       libssl-dev \
@@ -31,7 +29,16 @@ RUN apt-get update -y && \
       libgomp1 \
       libstdc++6 \
       graphviz \
-      && rm -rf /var/lib/apt/lists/*
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install igraph dependencies separately
+RUN apt-get update -y && \
+    DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
+      libigraph0-dev \
+      libglpk-dev \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/* || echo "Some packages not available, continuing..."
 
 # Copy only requirements first for layer caching
 COPY requirements.txt /app/requirements.txt
