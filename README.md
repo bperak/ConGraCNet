@@ -3,6 +3,7 @@
 [![Python 3.9+](https://img.shields.io/badge/python-3.9+-blue.svg)](https://www.python.org/downloads/)
 [![Streamlit](https://img.shields.io/badge/streamlit-1.41+-red.svg)](https://streamlit.io/)
 [![Neo4j](https://img.shields.io/badge/neo4j-4.4+-green.svg)](https://neo4j.com/)
+[![Docker](https://img.shields.io/badge/docker-available-blue.svg)](https://hub.docker.com/r/bperak/congracnet)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
 > **A sophisticated corpus-based graph application for syntactic-semantic analysis of concepts using Construction Grammar principles.**
@@ -37,14 +38,35 @@ ConGraCNet is a powerful web application that extracts and visualizes conceptual
 
 ## 🚀 Quick Start
 
-### Prerequisites
+### Option 1: Docker (Recommended) 🐳
+
+The easiest way to run ConGraCNet is using Docker:
+
+1. **Pull the Docker Image**
+   ```bash
+   docker pull bperak/congracnet:latest
+   ```
+
+2. **Run the Application**
+   ```bash
+   docker run -p 8501:8501 bperak/congracnet:latest
+   ```
+
+3. **Access the Application**
+   Open your browser and go to `http://localhost:8501`
+
+**Note**: You'll still need to configure your Neo4j database and Sketch Engine API credentials through the web interface.
+
+### Option 2: Local Installation
+
+#### Prerequisites
 
 - **Python 3.9+**
 - **Neo4j Database** (accessible at your specified URL)
 - **Sketch Engine API** credentials
 - **Git** for cloning the repository
 
-### Installation
+#### Installation
 
 1. **Clone the Repository**
    ```bash
@@ -122,6 +144,62 @@ The application will be available at `http://localhost:8501`
 - **Batch Processing**: Analyze multiple lemmas simultaneously
 - **Custom Metrics**: Implement custom centrality and similarity measures
 
+## 🐳 Docker Configuration
+
+### Using Docker Images
+
+ConGraCNet is available as pre-built Docker images on both Docker Hub and GitHub Container Registry:
+
+#### Docker Hub
+```bash
+# Pull the latest image
+docker pull bperak/congracnet:latest
+
+# Run the application
+docker run -p 8501:8501 bperak/congracnet:latest
+```
+
+#### GitHub Container Registry
+```bash
+# Pull from GHCR
+docker pull ghcr.io/bperak/congracnet:latest
+
+# Run the application
+docker run -p 8501:8501 ghcr.io/bperak/congracnet:latest
+```
+
+### Docker Compose (Optional)
+
+Create a `docker-compose.yml` file for easier management:
+
+```yaml
+version: '3.8'
+services:
+  congracnet:
+    image: bperak/congracnet:latest
+    ports:
+      - "8501:8501"
+    environment:
+      - STREAMLIT_SERVER_HEADLESS=true
+      - STREAMLIT_SERVER_ADDRESS=0.0.0.0
+    volumes:
+      - ./data:/app/data  # Optional: mount data directory
+    restart: unless-stopped
+```
+
+Run with: `docker-compose up -d`
+
+### Environment Variables
+
+You can pass environment variables to configure the application:
+
+```bash
+docker run -p 8501:8501 \
+  -e STREAMLIT_SERVER_PORT=8501 \
+  -e STREAMLIT_SERVER_ADDRESS=0.0.0.0 \
+  bperak/congracnet:latest
+```
+
 ## 🔧 Configuration
 
 ### Database Connection
@@ -139,7 +217,7 @@ apiKey = "your-sketch-engine-api-key"
 ```
 
 ### Application Settings
-- **Port Configuration**: Default port 7475 (configurable)
+- **Port Configuration**: Default port 8501 (configurable)
 - **Memory Limits**: Adjust for large-scale graph processing
 - **Caching**: Enable/disable result caching
 - **Logging**: Configure log levels and output
