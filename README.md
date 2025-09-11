@@ -87,105 +87,6 @@ ConGraCNet is a powerful web application that extracts and visualizes conceptual
 
 The application will be available at `http://localhost:8501`
 
-### Docker (Recommended)
-
-#### Use prebuilt Docker image
-If you prefer not to build locally, pull a prebuilt image and run:
-```bash
-# Docker Hub
-docker pull <dockerhub-username>/congracnet:latest
-docker run --rm -p 8501:8501 --env-file .env <dockerhub-username>/congracnet:latest
-
-# GHCR
-docker pull ghcr.io/<github-username>/congracnet:latest
-docker run --rm -p 8501:8501 --env-file .env ghcr.io/<github-username>/congracnet:latest
-```
-
-1. Create a `.env` in project root with your secrets (do not commit):
-   ```bash
-   # Neo4j
-   GRAPH_URL=bolt://your-neo4j-server:7687
-   GRAPH_USER=neo4j
-   GRAPH_PASS=your-password
-
-   # Sketch Engine
-   SKETCH_USER=your-sketch-user
-   SKETCH_API_KEY=your-sketch-key
-   ```
-
-2. Build and run using Docker Compose:
-   ```bash
-   docker compose up --build
-   ```
-
-   The app will be available at `http://localhost:8501`.
-
-3. One-off Docker build/run without compose:
-   ```bash
-   docker build -t congracnet .
-   docker run --rm -p 8501:8501 --env-file .env congracnet
-   ```
-
-Notes:
-- The image uses Python 3.11-slim and installs dependencies from `requirements.txt`.
-- `.env` variables override values in `authSettings.py` at runtime via `sitecustomize.py`.
-- To disable automatic spaCy model download, build with `--build-arg INSTALL_SPACY_MODEL=false`.
-
-### 📦 Publishing (Code and Image)
-
-#### Option 1: Publish code to GitHub
-1. Ensure secrets are NOT in code. Do not commit `.env`. Use the provided `env.example` as a template.
-2. Push the repository:
-   ```bash
-   git init
-   git branch -M main
-   git remote add origin https://github.com/<your-username>/ConGraCNet.git
-   git add .
-   git commit -m "Containerized app"
-   git push -u origin main
-   ```
-
-#### Option 2: Publish a Docker image
-Docker Hub:
-```bash
-docker login
-docker build -t <dockerhub-username>/congracnet:latest .
-docker push <dockerhub-username>/congracnet:latest
-# Consumers:
-# docker run --rm -p 8501:8501 --env-file .env <dockerhub-username>/congracnet:latest
-```
-
-GitHub Container Registry (GHCR):
-```bash
-echo $CR_PAT | docker login ghcr.io -u <github-username> --password-stdin
-docker build -t ghcr.io/<github-username>/congracnet:latest .
-docker push ghcr.io/<github-username>/congracnet:latest
-# Consumers:
-# docker run --rm -p 8501:8501 --env-file .env ghcr.io/<github-username>/congracnet:latest
-```
-
-#### Automated publishing with GitHub Actions
-This repo includes `.github/workflows/docker-publish.yml` which builds and pushes images to Docker Hub and GHCR on pushes to `main`.
-
-Configure repository secrets:
-- `DOCKERHUB_USERNAME`: your Docker Hub username
-- `DOCKERHUB_TOKEN`: a Docker Hub access token
-
-Images published as:
-- `ghcr.io/<github-username>/congracnet:latest`
-- `<dockerhub-username>/congracnet:latest`
-
-Pull and run:
-```bash
-# From Docker Hub
-docker pull <dockerhub-username>/congracnet:latest
-docker run --rm -p 8501:8501 --env-file .env <dockerhub-username>/congracnet:latest
-
-# From GHCR
-docker pull ghcr.io/<github-username>/congracnet:latest
-docker run --rm -p 8501:8501 --env-file .env ghcr.io/<github-username>/congracnet:latest
-```
-
 ## 📖 Usage Guide
 
 ### 1. Corpus Selection
@@ -383,5 +284,5 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 **ConGraCNet** - Exploring the conceptual structure of language through construction grammar and network analysis.
 
-*Built with for linguistic research and natural language processing by EmoCNet team.*
+*Built with ❤️ for linguistic research and natural language processing.*
 
