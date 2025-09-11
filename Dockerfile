@@ -41,24 +41,11 @@ RUN pip install --upgrade pip && \
     pip install -r /app/requirements.txt && \
     pip install python-dotenv
 
-<<<<<<< HEAD
-# spaCy model (if present in requirements, skip; otherwise allow env toggle)
-ARG INSTALL_SPACY_MODEL=true
-ENV INSTALL_SPACY_MODEL=${INSTALL_SPACY_MODEL}
-RUN if [ "$INSTALL_SPACY_MODEL" = "true" ]; then \
-      python -c "import subprocess, sys; \
-      try: \
-          import spacy; \
-          spacy.load('en_core_web_sm'); \
-      except Exception: \
-          subprocess.run([sys.executable, '-m', 'spacy', 'download', 'en_core_web_sm'], check=False)" || true; \
-=======
 # spaCy model (optional download)
 ARG INSTALL_SPACY_MODEL=true
 ENV INSTALL_SPACY_MODEL=${INSTALL_SPACY_MODEL}
 RUN if [ "$INSTALL_SPACY_MODEL" = "true" ]; then \
       python -m spacy download en_core_web_sm || true; \
->>>>>>> e54fed15e6bdc225d8aefd2b521b112790555ef7
     fi
 
 # Copy the app
