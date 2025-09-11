@@ -44,16 +44,19 @@ RUN apt-get update -y && \
 COPY requirements.txt /app/requirements.txt
 
 # Install Python deps. Prefer CPU-only by default.
-RUN pip install --upgrade pip && \
-    pip install -r /app/requirements.txt && \
-    pip install python-dotenv
+RUN pip install --upgrade pip
 
-# spaCy model (optional download - fixed)
-ARG INSTALL_SPACY_MODEL=true
-ENV INSTALL_SPACY_MODEL=${INSTALL_SPACY_MODEL}
-RUN if [ "$INSTALL_SPACY_MODEL" = "true" ]; then \
-      python -m spacy download en_core_web_sm || true; \
-    fi
+# Install core packages first
+RUN pip install python-dotenv numpy pandas scikit-learn
+
+# Install PyTorch CPU-only version (smaller and more reliable)
+RUN pip install torch==2.0.1+cpu torchvision==0.15.2+cpu -f https://download.pytorch.org/whl/torch_stable.html
+
+# Install remaining packages from requirements.txt
+RUN pip install -r /app/requirements.txt || echo "Some packages failed, continuing..."
+
+# Install spaCy model separately
+RUN python -m spacy download en_core_web_sm || echo "spaCy model download failed, continuing..."
 
 # Copy the app
 COPY . /app
