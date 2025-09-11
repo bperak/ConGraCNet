@@ -41,7 +41,7 @@ RUN pip install --upgrade pip && \
     pip install -r /app/requirements.txt && \
     pip install python-dotenv
 
-# spaCy model (optional download)
+# spaCy model (optional download - fixed)
 ARG INSTALL_SPACY_MODEL=true
 ENV INSTALL_SPACY_MODEL=${INSTALL_SPACY_MODEL}
 RUN if [ "$INSTALL_SPACY_MODEL" = "true" ]; then \
