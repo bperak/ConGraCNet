@@ -45,16 +45,13 @@ RUN pip install --upgrade pip && \
 ARG INSTALL_SPACY_MODEL=true
 ENV INSTALL_SPACY_MODEL=${INSTALL_SPACY_MODEL}
 RUN if [ "$INSTALL_SPACY_MODEL" = "true" ]; then \
-      python - << 'PY' || true
-import subprocess, sys
-try:
-    import spacy
-    # Attempt to ensure en_core_web_sm is present
-    spacy.load('en_core_web_sm')
-except Exception:
-    subprocess.run([sys.executable, '-m', 'spacy', 'download', 'en_core_web_sm'], check=False)
-PY
-    ; fi
+      python -c "import subprocess, sys; \
+      try: \
+          import spacy; \
+          spacy.load('en_core_web_sm'); \
+      except Exception: \
+          subprocess.run([sys.executable, '-m', 'spacy', 'download', 'en_core_web_sm'], check=False)" || true; \
+    fi
 
 # Copy the app
 COPY . /app
