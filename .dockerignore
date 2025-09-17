@@ -39,3 +39,6 @@ dist/
 # Streamlit and app caches
 .streamlit/
 **/.cache/
+
+# Keep required data for the Streamlit image
+!sentic_diff_sentic6_calcByBetweenness.pkl

@@ -2,7 +2,6 @@ import itertools
 import networkx as nx
 import pandas as pd
 import numpy as np
-from torch import float16, float32
 
 def sli_importance(G, **kwargs):
     '''

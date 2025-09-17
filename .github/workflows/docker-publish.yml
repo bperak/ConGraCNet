@@ -41,20 +41,16 @@ jobs:
           echo "dh_latest=${DH_BASE}:latest" >> $GITHUB_OUTPUT
           echo "dh_sha=${DH_BASE}:sha-${GITHUB_SHA}" >> $GITHUB_OUTPUT
 
-      - name: Build and push to GHCR and Docker Hub
+      - name: Build and push Streamlit image
         uses: docker/build-push-action@v6
         with:
           context: .
-          file: ./Dockerfile
+          file: ./Dockerfile.cgcn
           push: true
           tags: |
             ${{ steps.vars.outputs.ghcr_latest }}
             ${{ steps.vars.outputs.ghcr_sha }}
             ${{ steps.vars.outputs.dh_latest }}
             ${{ steps.vars.outputs.dh_sha }}
-          build-args: |
-            PYTHON_VERSION=3.11-slim
-            INSTALL_SPACY_MODEL=true
-            INSTALL_TORCH=false
 
 

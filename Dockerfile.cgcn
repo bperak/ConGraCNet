@@ -1,0 +1,64 @@
+# syntax=docker/dockerfile:1.7
+
+ARG PYTHON_VERSION=3.11-slim
+FROM python:${PYTHON_VERSION}
+
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    PIP_NO_CACHE_DIR=1 \
+    PIP_DISABLE_PIP_VERSION_CHECK=1 \
+    PYTHONPATH=/app \
+    NLTK_DATA=/usr/local/share/nltk_data \
+    STREAMLIT_SERVER_HEADLESS=true \
+    STREAMLIT_SERVER_ADDRESS=0.0.0.0 \
+    STREAMLIT_BROWSER_GATHER_USAGE_STATS=false
+
+WORKDIR /app
+
+# System dependencies required by igraph/graph tooling
+RUN apt-get update -y && \
+    DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
+      build-essential \
+      pkg-config \
+      libxml2-dev \
+      libz-dev \
+      libssl-dev \
+      libffi-dev \
+      libglib2.0-0 \
+      libgl1 \
+      libgomp1 \
+      libstdc++6 \
+      graphviz \
+      libigraph-dev \
+      libglpk-dev \
+    && apt-get clean && rm -rf /var/lib/apt/lists/*
+
+# Python dependencies for the Streamlit app
+COPY requirements.cgcn.txt /tmp/requirements.txt
+RUN pip install --upgrade pip && \
+    pip install --no-cache-dir -r /tmp/requirements.txt && \
+    rm /tmp/requirements.txt
+
+# Language resources required at runtime
+RUN mkdir -p /usr/local/share/nltk_data && \
+    python -m spacy download en_core_web_sm && \
+    python -m nltk.downloader wordnet omw-1.4 vader_lexicon
+
+# Application code and resources
+COPY cgcnStream_0_3_6_withSBBLabel.py ./
+COPY cgcn_functions_3_6.py ./
+COPY sentiment_functions_3_6.py ./
+COPY sketch2Neo2.py ./
+COPY spacy_wordnet_functions.py ./
+COPY wordnet_functions.py ./
+COPY sli.py ./
+COPY markdown ./markdown
+COPY sentic_diff_sentic6_calcByBetweenness.pkl ./
+COPY SentiWordNet.txt ./
+COPY SentiWords_1.1.txt ./
+COPY authSettings.py.example ./authSettings.py
+
+# Expose Streamlit default port
+EXPOSE 8501
+
+CMD ["streamlit", "run", "cgcnStream_0_3_6_withSBBLabel.py"]
