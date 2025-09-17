@@ -49,6 +49,9 @@ RUN pip install --upgrade pip
 # Install core packages first
 RUN pip install python-dotenv numpy pandas scikit-learn
 
+# Install Streamlit explicitly (critical for the app)
+RUN pip install streamlit==1.27.0
+
 # Install PyTorch CPU-only version (smaller and more reliable)
 RUN pip install torch==2.0.1+cpu torchvision==0.15.2+cpu -f https://download.pytorch.org/whl/torch_stable.html
 
@@ -57,6 +60,11 @@ RUN pip install -r /app/requirements.txt || echo "Some packages failed, continui
 
 # Install spaCy model separately
 RUN python -m spacy download en_core_web_sm || echo "spaCy model download failed, continuing..."
+
+# Verify critical packages are installed
+RUN python -c "import streamlit; print('Streamlit version:', streamlit.__version__)" && \
+    python -c "import pandas; print('Pandas version:', pandas.__version__)" && \
+    python -c "import numpy; print('NumPy version:', numpy.__version__)"
 
 # Copy the app
 COPY . /app
