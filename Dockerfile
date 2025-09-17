@@ -55,16 +55,21 @@ RUN pip install streamlit==1.27.0
 # Install PyTorch CPU-only version (smaller and more reliable)
 RUN pip install torch==2.0.1+cpu torchvision==0.15.2+cpu -f https://download.pytorch.org/whl/torch_stable.html
 
-# Install remaining packages from requirements.txt
-RUN pip install -r /app/requirements.txt || echo "Some packages failed, continuing..."
+# Install remaining packages from requirements.txt (fail on error)
+RUN pip install -r /app/requirements.txt
 
-# Install spaCy model separately
-RUN python -m spacy download en_core_web_sm || echo "spaCy model download failed, continuing..."
+# Ensure py2neo is installed explicitly (safety) and verify
+RUN pip install --no-deps py2neo==2021.2.3 && \
+    python -c "import py2neo; print('py2neo version:', py2neo.__version__)"
+
+# Install spaCy model separately (non-fatal if it fails due to network)
+RUN python -m spacy download en_core_web_sm || true
 
 # Verify critical packages are installed
 RUN python -c "import streamlit; print('Streamlit version:', streamlit.__version__)" && \
     python -c "import pandas; print('Pandas version:', pandas.__version__)" && \
-    python -c "import numpy; print('NumPy version:', numpy.__version__)"
+    python -c "import numpy; print('NumPy version:', numpy.__version__)" && \
+    python -c "import py2neo; print('py2neo import OK')"
 
 # Copy the app
 COPY . /app
