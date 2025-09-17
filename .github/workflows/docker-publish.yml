@@ -55,5 +55,6 @@ jobs:
           build-args: |
             PYTHON_VERSION=3.11-slim
             INSTALL_SPACY_MODEL=true
+            INSTALL_TORCH=false
 
 
