@@ -65,11 +65,17 @@ RUN pip install --no-deps py2neo==2021.2.3 && \
 # Install spaCy model separately (non-fatal if it fails due to network)
 RUN python -m spacy download en_core_web_sm || true
 
+# Install NLTK data needed by wordnet/vader and make it available to appuser
+ENV NLTK_DATA=/usr/local/share/nltk_data
+RUN mkdir -p /usr/local/share/nltk_data && \
+    python -c "import nltk; nltk.download('wordnet', download_dir='/usr/local/share/nltk_data'); nltk.download('omw-1.4', download_dir='/usr/local/share/nltk_data'); nltk.download('vader_lexicon', download_dir='/usr/local/share/nltk_data')"
+
 # Verify critical packages are installed
 RUN python -c "import streamlit; print('Streamlit version:', streamlit.__version__)" && \
     python -c "import pandas; print('Pandas version:', pandas.__version__)" && \
     python -c "import numpy; print('NumPy version:', numpy.__version__)" && \
-    python -c "import py2neo; print('py2neo import OK')"
+    python -c "import py2neo; print('py2neo import OK')" && \
+    python -c "from nltk.corpus import wordnet as wn; from nltk.sentiment.vader import SentimentIntensityAnalyzer; print('NLTK corpora OK')"
 
 # Copy the app
 COPY . /app
