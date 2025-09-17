@@ -40,27 +40,14 @@ RUN apt-get update -y && \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/* || echo "Some packages not available, continuing..."
 
-# Copy only requirements first for layer caching
-COPY requirements.txt /app/requirements.txt
+# Copy only lockfile first for layer caching
+COPY requirements.lock /app/requirements.lock
 
-# Install Python deps. Prefer CPU-only by default.
-RUN pip install --upgrade pip
+# Install Python deps from lock (fail on error)
+RUN pip install --upgrade pip && pip install -r /app/requirements.lock
 
-# Install core packages first
-RUN pip install python-dotenv numpy pandas scikit-learn
-
-# Install Streamlit explicitly (critical for the app)
-RUN pip install streamlit==1.27.0
-
-# Install PyTorch CPU-only version (smaller and more reliable)
-RUN pip install torch==2.0.1+cpu torchvision==0.15.2+cpu -f https://download.pytorch.org/whl/torch_stable.html
-
-# Install remaining packages from requirements.txt (fail on error)
-RUN pip install -r /app/requirements.txt
-
-# Ensure py2neo is installed explicitly (safety) and verify
-RUN pip install --no-deps py2neo==2021.2.4 && \
-    python -c "import py2neo; print('py2neo version:', py2neo.__version__)"
+# Verify py2neo from lock is importable
+RUN python -c "import py2neo; print('py2neo version:', py2neo.__version__)"
 
 # Install spaCy model separately (non-fatal if it fails due to network)
 RUN python -m spacy download en_core_web_sm || true
