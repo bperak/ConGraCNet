@@ -43,8 +43,19 @@ RUN apt-get update -y && \
 # Copy only lockfile first for layer caching
 COPY requirements.lock /app/requirements.lock
 
-# Install Python deps from lock (fail on error)
-RUN pip install --upgrade pip && pip install -r /app/requirements.lock
+# Allow skipping heavy ML packages to reduce image size
+ARG INSTALL_TORCH=true
+ENV INSTALL_TORCH=${INSTALL_TORCH}
+
+# Prepare final requirements (optionally exclude torch/transformers)
+RUN pip install --upgrade pip && \
+    if [ "$INSTALL_TORCH" = "true" ]; then \
+      cp /app/requirements.lock /app/requirements.final; \
+    else \
+      awk 'BEGIN{IGNORECASE=1} !/^(torch(vision)?|transformers|sentence-transformers)\b/' /app/requirements.lock > /app/requirements.final; \
+    fi && \
+    echo "Using requirements file:" && wc -l /app/requirements.final && head -n 10 /app/requirements.final && \
+    pip install -r /app/requirements.final
 
 # Verify py2neo from lock is importable
 RUN python -c "import py2neo; print('py2neo version:', py2neo.__version__)"
