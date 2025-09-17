@@ -75,7 +75,10 @@ RUN python -c "import streamlit; print('Streamlit version:', streamlit.__version
     python -c "import pandas; print('Pandas version:', pandas.__version__)" && \
     python -c "import numpy; print('NumPy version:', numpy.__version__)" && \
     python -c "import py2neo; print('py2neo import OK')" && \
-    python -c "from nltk.corpus import wordnet as wn; from nltk.sentiment.vader import SentimentIntensityAnalyzer; print('NLTK corpora OK')"
+    python -c "from nltk.corpus import wordnet as wn; from nltk.sentiment.vader import SentimentIntensityAnalyzer; print('NLTK corpora OK')" && \
+    python -c "import igraph, louvain, leidenalg, networkx; print('Graph libs OK')" && \
+    python -c "import plotly_resampler as pr; print('plotly_resampler OK')" && \
+    python -c "import spacy, spacy_wordnet; print('spaCy + spacy_wordnet OK')"
 
 # Copy the app
 COPY . /app
