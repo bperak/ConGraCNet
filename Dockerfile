@@ -59,7 +59,7 @@ RUN pip install torch==2.0.1+cpu torchvision==0.15.2+cpu -f https://download.pyt
 RUN pip install -r /app/requirements.txt
 
 # Ensure py2neo is installed explicitly (safety) and verify
-RUN pip install --no-deps py2neo==2021.2.3 && \
+RUN pip install --no-deps py2neo==2021.2.4 && \
     python -c "import py2neo; print('py2neo version:', py2neo.__version__)"
 
 # Install spaCy model separately (non-fatal if it fails due to network)
