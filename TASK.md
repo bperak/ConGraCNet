@@ -23,9 +23,9 @@
 ### 🐳 Containerization (New)
 - [x] Add Dockerfile for Streamlit app
 - [x] Add .dockerignore to reduce build context
-- [x] Add sitecustomize.py to load .env and override authSettings
 - [x] Add docker-compose.yml for local development
 - [x] Update README with Docker usage
+- [x] Add runtime entrypoint to generate env-based `authSettings.py` without source edits
 
 ## Completed Tasks ✅
 - [x] **Project Structure Analysis** - Analyzed existing codebase and identified components

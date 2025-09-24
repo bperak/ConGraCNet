@@ -335,6 +335,61 @@ docker run -p 8501:8501 congracnet
 docker run -p 8501:8501 -v $(pwd):/app congracnet
 ```
 
+#### 3. Docker Environment Overrides (authSettings)
+
+The provided Docker setup includes an entrypoint that generates a runtime `authSettings.py` from container OS environment variables. This lets you configure credentials without editing source files.
+
+Environment variables and defaults:
+
+- `GRAPH_USER` (default: `neo4j`)
+- `GRAPH_PASS` (default: `neo4j`)
+- `GRAPH_URL`  (default: `bolt://polinom.uniri.hr:7687`)
+- `SKETCH_USER` (default: `your-sketch-engine-username`)
+- `SKETCH_API_KEY` (default: `your-sketch-engine-api-key`)
+
+Run with overrides:
+
+```bash
+docker run --rm -p 8501:8501 \
+  -e GRAPH_USER=neo4j \
+  -e GRAPH_PASS=change-me \
+  -e GRAPH_URL=bolt://polinom.uniri.hr:7687 \
+  -e SKETCH_USER=your-user \
+  -e SKETCH_API_KEY=your-key \
+  congracnet
+```
+
+Using Compose with `.env`:
+
+```yaml
+version: "3.9"
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    env_file:
+      - .env
+    environment:
+      STREAMLIT_SERVER_HEADLESS: "true"
+      STREAMLIT_SERVER_ADDRESS: 0.0.0.0
+      STREAMLIT_BROWSER_GATHER_USAGE_STATS: "false"
+      # Optionally override here instead of .env
+      # GRAPH_URL: bolt://polinom.uniri.hr:7687
+      # GRAPH_USER: neo4j
+      # GRAPH_PASS: change-me
+      # SKETCH_USER: your-user
+      # SKETCH_API_KEY: your-key
+    ports:
+      - "8501:8501"
+```
+
+Verification inside the running container:
+
+```bash
+docker exec -it congracnet python -c "import authSettings as a; print(a.graphUser, a.graphURL, a.userName)"
+```
+
 ## Environment Setup
 
 ### Virtual Environment Management

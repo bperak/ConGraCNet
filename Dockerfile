@@ -7,7 +7,7 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
     PIP_NO_CACHE_DIR=1 \
     PIP_DISABLE_PIP_VERSION_CHECK=1 \
-    PYTHONPATH=/app
+    PYTHONPATH=/run-config:/app
 
 WORKDIR /app
 
@@ -81,6 +81,10 @@ RUN python -c "import streamlit; print('Streamlit version:', streamlit.__version
 # Copy the app
 COPY . /app
 
+# Copy entrypoint that generates runtime authSettings from env
+COPY docker/entrypoint.sh /usr/local/bin/entrypoint.sh
+RUN chmod +x /usr/local/bin/entrypoint.sh
+
 # Ensure authSettings.py exists in the image (copy from example if missing)
 RUN if [ ! -f /app/authSettings.py ]; then \
       if [ -f /app/authSettings.py.example ]; then \
@@ -106,6 +110,7 @@ ENV STREAMLIT_SERVER_HEADLESS=true \
 HEALTHCHECK --interval=30s --timeout=5s --start-period=20s --retries=3 CMD bash -c 'exec 3<>/dev/tcp/127.0.0.1/8501 || exit 1'
 
 # Run the Streamlit app. Allow overriding via CMD.
+ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
 CMD ["streamlit", "run", "cgcnStream_0_3_6_withSBBLabel.py"]
 
 

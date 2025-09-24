@@ -200,6 +200,53 @@ docker run -p 8501:8501 \
   bperak/congracnet:latest
 ```
 
+#### Auth and API configuration via environment
+
+When running via the provided Dockerfiles or `docker-compose.yml`, the container entrypoint generates a runtime `authSettings.py` that reads from OS environment variables with sensible defaults. You can set these in your `.env` file or directly in compose:
+
+Environment variable names and defaults:
+
+- `GRAPH_USER` (default: `neo4j`)
+- `GRAPH_PASS` (default: `neo4j`)
+- `GRAPH_URL`  (default: `bolt://polinom.uniri.hr:7687`)
+- `SKETCH_USER` (default: `your-sketch-engine-username`)
+- `SKETCH_API_KEY` (default: `your-sketch-engine-api-key`)
+
+Example `.env`:
+
+```dotenv
+GRAPH_USER=neo4j
+GRAPH_PASS=change-me
+GRAPH_URL=bolt://polinom.uniri.hr:7687
+SKETCH_USER=your-user
+SKETCH_API_KEY=your-key
+```
+
+Compose snippet:
+
+```yaml
+services:
+  app:
+    env_file:
+      - .env
+    environment:
+      STREAMLIT_SERVER_HEADLESS: "true"
+      STREAMLIT_SERVER_ADDRESS: 0.0.0.0
+      STREAMLIT_BROWSER_GATHER_USAGE_STATS: "false"
+      # Optionally override here instead of .env
+      # GRAPH_URL: bolt://polinom.uniri.hr:7687
+      # GRAPH_USER: neo4j
+      # GRAPH_PASS: change-me
+      # SKETCH_USER: your-user
+      # SKETCH_API_KEY: your-key
+```
+
+Verification (after `docker compose up -d`):
+
+```bash
+docker exec -it congracnet python -c "import authSettings; print(authSettings.graphUser, authSettings.graphURL)"
+```
+
 ## 🔧 Configuration
 
 ### Database Connection

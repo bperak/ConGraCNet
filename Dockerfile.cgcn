@@ -7,7 +7,7 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
     PIP_NO_CACHE_DIR=1 \
     PIP_DISABLE_PIP_VERSION_CHECK=1 \
-    PYTHONPATH=/app \
+    PYTHONPATH=/run-config:/app \
     NLTK_DATA=/usr/local/share/nltk_data \
     STREAMLIT_SERVER_HEADLESS=true \
     STREAMLIT_SERVER_ADDRESS=0.0.0.0 \
@@ -58,7 +58,12 @@ COPY SentiWordNet.txt ./
 COPY SentiWords_1.1.txt ./
 COPY authSettings.py.example ./authSettings.py
 
+# Copy entrypoint that generates runtime authSettings from env
+COPY docker/entrypoint.sh /usr/local/bin/entrypoint.sh
+RUN chmod +x /usr/local/bin/entrypoint.sh
+
 # Expose Streamlit default port
 EXPOSE 8501
 
+ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
 CMD ["streamlit", "run", "cgcnStream_0_3_6_withSBBLabel.py"]
