@@ -41,8 +41,8 @@ RUN pip install --upgrade pip && \
 
 # Language resources required at runtime
 RUN mkdir -p /usr/local/share/nltk_data && \
-    python -m spacy download en_core_web_sm && \
-    python -m nltk.downloader wordnet omw-1.4 vader_lexicon
+    (python -m spacy download en_core_web_sm || echo "spaCy model install failed, continuing") && \
+    (python -m nltk.downloader wordnet omw-1.4 vader_lexicon || echo "NLTK data download failed, continuing")
 
 # Application code and resources
 COPY cgcnStream_0_3_6_withSBBLabel.py ./

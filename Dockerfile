@@ -61,12 +61,15 @@ RUN pip install --upgrade pip && \
 RUN python -c "import py2neo; print('py2neo version:', py2neo.__version__)"
 
 # Install spaCy model separately (non-fatal if it fails due to network)
-RUN python -m spacy download en_core_web_sm || true
+RUN python -m spacy download en_core_web_sm || echo "spaCy model install failed, continuing"
 
 # Install NLTK data needed by wordnet/vader and make it available to appuser
 ENV NLTK_DATA=/usr/local/share/nltk_data
 RUN mkdir -p /usr/local/share/nltk_data && \
-    python -c "import nltk; nltk.download('wordnet', download_dir='/usr/local/share/nltk_data'); nltk.download('omw-1.4', download_dir='/usr/local/share/nltk_data'); nltk.download('vader_lexicon', download_dir='/usr/local/share/nltk_data')"
+    python -c "import nltk; \
+try:\n    nltk.download('wordnet', download_dir='/usr/local/share/nltk_data'); \
+    nltk.download('omw-1.4', download_dir='/usr/local/share/nltk_data'); \
+    nltk.download('vader_lexicon', download_dir='/usr/local/share/nltk_data')\nexcept Exception as e:\n    print('NLTK data download failed, continuing:', e)"
 
 # Verify critical packages are installed
 RUN python -c "import streamlit; print('Streamlit version:', streamlit.__version__)" && \
